@@ -1,14 +1,10 @@
 package client;
 
-import java.io.IOException;
-
-import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.QueueingConsumer;
+import com.rabbitmq.client.QueueingConsumer.Delivery;
 
 public class Recv2 {
 
@@ -49,16 +45,25 @@ class Receiver implements Runnable {
 	public void run() {
 		try {
 			channel.queueDeclare(Recv2.QUEUE_NAME, false, false, false, null);
-			Consumer consumer = new DefaultConsumer(channel) {
-			      @Override
-			      public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
-			          throws IOException {
-			        String message = new String(body, "UTF-8");
-			        System.out.println(" [x] Received '" + message + "' by " + id);
-			      }
-			};
+			QueueingConsumer consumer = null; 
+			Delivery delivery = null;
+			String message = null;
+			consumer = new QueueingConsumer(channel);
+			channel.setDefaultConsumer(consumer);
+			channel.basicConsume(Recv2.QUEUE_NAME, false, consumer);
 			while (!stop) {
-				channel.basicConsume(Recv2.QUEUE_NAME, true, consumer);
+				try {
+					consumer = (QueueingConsumer) channel.getDefaultConsumer();
+					delivery = consumer.nextDelivery(200);
+					if( delivery != null ) {
+						message = new String( delivery.getBody(), "UTF-8" );
+						System.out.println(" [x] Received '" + message + "' by " + id);
+						channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+					}
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}catch (Exception e) {
 			System.err.println(e);
