@@ -1,4 +1,4 @@
-package client;
+package rabbit_test;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;

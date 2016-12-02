@@ -1,4 +1,4 @@
-package client;
+package rabbit_test;
 
 public class ManagerRunner {
 
