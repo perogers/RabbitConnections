@@ -15,7 +15,7 @@ public class FakeWorker implements Runnable{
 	public void run() {
 		try { Thread.sleep(200L); } catch (InterruptedException e) {}
 		publisher.postMessage(message);
-		System.out.printf("Worker %d completed\n", id);
+		//System.out.printf("Worker %d completed\n", id);
 	}	
 
 }
