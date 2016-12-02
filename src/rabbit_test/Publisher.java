@@ -23,12 +23,12 @@ public class Publisher {
 	void startMonitor() {
 		
 		if ( destinationQueue == null ) {
-			System.out.println("Monitor not running");
+			System.out.println("Publisher not running");
 			return;
 		}
 		new Thread() {
 			public void run() {
-				System.out.println("Monitor started for " + destinationQueue);
+				System.out.println("Publisher started for " + destinationQueue);
 				try {
 					channel = connection.createChannel();
 					channel.queueDeclare(destinationQueue, false, false, false, null);
@@ -42,7 +42,7 @@ public class Publisher {
 							}
 							
 							channel.basicPublish("", destinationQueue, MessageProperties.TEXT_PLAIN, message.getBytes("UTF-8"));
-							System.out.println(" [x] Sent '" + message + "'");
+							//System.out.println(" [x] Sent '" + message + "'");
 						}
 					}
 				}

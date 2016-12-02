@@ -29,14 +29,17 @@ public class TestConsumer extends DefaultConsumer {
                                byte[] body)
         throws IOException
     {
-        String routingKey = envelope.getRoutingKey();
-        String contentType = properties.getContentType();
+       // String routingKey = envelope.getRoutingKey();
+       // String contentType = properties.getContentType();
         long deliveryTag = envelope.getDeliveryTag();
         String message = new String(body, "UTF-8");
         System.out.printf(" %d Received '%s'\n", id,  message);
-        getChannel().basicAck(deliveryTag, false);
-        executor.submit(new FakeWorker(id, publisher, message));
-    }
+        Channel channel = getChannel();
+
+		getChannel().basicAck(deliveryTag, false);
+		executor.submit(new FakeWorker(id, publisher, message));
+	
+	}
 	
 	
 	@Override
@@ -67,7 +70,7 @@ public class TestConsumer extends DefaultConsumer {
 	public void handleShutdownSignal(String consumerTag, ShutdownSignalException sig) {
 		super.handleShutdownSignal(consumerTag, sig);
 		System.out.printf("++++ %d handleShutdownSignal\n", id);
-		executor.shutdownNow();
+		executor.shutdown();
 		publisher.shutdown();
 	}
 	

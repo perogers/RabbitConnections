@@ -13,7 +13,7 @@ public class FakeWorker implements Runnable{
 	
 	@Override
 	public void run() {
-		try { Thread.sleep(200L); } catch (InterruptedException e) {}
+		try { Thread.sleep(1000L); } catch (InterruptedException e) {}
 		publisher.postMessage(message);
 		//System.out.printf("Worker %d completed\n", id);
 	}	

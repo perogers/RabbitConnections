@@ -2,14 +2,20 @@ package rabbit_test;
 
 public class ManagerRunner {
 
-	final static String QUEUE_NAME = "hello";
 
 	public static void main(String[] argv) throws Exception {
-		TestAmqpManager sdk1 = new TestAmqpManager(QUEUE_NAME, QUEUE_NAME + "-bak");
-		TestAmqpManager sdk2 = new TestAmqpManager(QUEUE_NAME + "-bak", null);
-		sdk1.start();
-		sdk2.start();
-		
+		if (argv.length < 1) {
+			System.err.println("Manager Runner <Source Queue Name> <Destination Queue Name - optional>");
+			System.exit(1);
+		}
+		String srcQ = argv[0];
+		String destQ = null;
+		if (argv.length >1 ) {
+			destQ = argv[1];
+		}
+		System.out.printf("Starting for Source Q: '%s'  Destination Q: '%s'\n", srcQ, destQ);
+		TestAmqpManager sdk = new TestAmqpManager(srcQ, destQ);
+		sdk.start();
 	}
 
 }
