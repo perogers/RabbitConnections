@@ -18,10 +18,10 @@ public class Send {
 
     channel.queueDeclare(QUEUE_NAME, false, false, false, null);
     String message = "Hello World!";
-    for(int i =0; i < 100000 ; i++) {
+    for(int i =0; i < 900000; i++) {
 	    channel.basicPublish("", QUEUE_NAME, MessageProperties.TEXT_PLAIN, message.getBytes("UTF-8"));
 	    System.out.println(" [x] Sent '" + message + "'");
-	    try { Thread.sleep(10L); } catch (InterruptedException ie) { break; }
+	    try { Thread.sleep(2L); } catch (InterruptedException ie) { break; }
     }
     channel.close();
     connection.close();
