@@ -35,13 +35,13 @@ public class TestConsumer extends DefaultConsumer {
         String message = new String(body, "UTF-8");
         System.out.printf(" %d Received '%s'\n", id,  message);
         Channel channel = getChannel();
-
-		getChannel().basicAck(deliveryTag, false);
-		executor.submit(new FakeWorker(id, publisher, message));
-	
+		if( !executor.isShutdown() ) {
+			executor.submit(new FakeWorker(id, publisher, message));
+			channel.basicAck(deliveryTag, false);
+		}
 	}
-	
-	
+
+
 	@Override
 	public void handleCancel(String consumerTag) throws IOException {
 		super.handleCancel(consumerTag);

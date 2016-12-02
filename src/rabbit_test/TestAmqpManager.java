@@ -26,7 +26,7 @@ public class TestAmqpManager extends Thread {
 	public void run() {
 		
 		try {
-			executor = Executors.newCachedThreadPool();
+			executor = Executors.newFixedThreadPool(100);
 		}
 		catch (IllegalArgumentException e) {
 			e.printStackTrace();
@@ -36,13 +36,13 @@ public class TestAmqpManager extends Thread {
 			ConnectionFactory factory = new ConnectionFactory();
 			factory.setHost("127.0.0.1");
 			factory.setAutomaticRecoveryEnabled( false );
-			factory.setConnectionTimeout(2000);
+			factory.setConnectionTimeout(500);
+			factory.setShutdownTimeout(500);
 			
 			final Connection connection1 = factory.newConnection();
-			final Connection connection2 = factory.newConnection();
 			final Publisher publisher = new Publisher(destinationQueueName, connection1);
 			
-			List<Channel> channels = buildSubscriberChannels(connection2, publisher);
+			List<Channel> channels = buildSubscriberChannels(connection1, publisher);
 			publisher.startMonitor();
 			
 			
@@ -61,22 +61,17 @@ public class TestAmqpManager extends Thread {
 			Runtime.getRuntime().addShutdownHook( new Thread() {
 				@Override
 				public void run() {
-					executor.shutdownNow();
-					publisher.shutdown();
+					System.out.println("****** Shutdown ******");
+					
+					
 					try {
 						if( connection1.isOpen())
 							connection1.close();
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					try {
-						if( connection2.isOpen())
-							connection2.close();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					executor.shutdownNow();
+					publisher.shutdown();
 				}
 			});
 		}
@@ -90,6 +85,7 @@ public class TestAmqpManager extends Thread {
 		for (int ccnt = 0; ccnt < 1; ccnt++) {
 			final Channel channel = connection.createChannel();
 			channel.queueDeclare(sourceQueueName, false, false, false, null);
+			channel.basicQos(10, true);
 			channel.setDefaultConsumer(new TestConsumer(channel, ccnt, executor, publisher));
 			channels.add(channel);
 		}
