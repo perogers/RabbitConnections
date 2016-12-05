@@ -1,6 +1,8 @@
 package rabbit_test;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 
 import com.rabbitmq.client.AMQP;
@@ -57,7 +59,7 @@ public class TestConsumer extends DefaultConsumer {
 	@Override
 	public void handleConsumeOk(String consumerTag) {
 		super.handleConsumeOk(consumerTag);
-		System.out.printf("++++ %d handleConsumeOk\n", id);
+		System.out.printf("++++ handleConsumeOk for consumer %d\n", id);
 	}
 
 	@Override
@@ -69,7 +71,7 @@ public class TestConsumer extends DefaultConsumer {
 	@Override
 	public void handleShutdownSignal(String consumerTag, ShutdownSignalException sig) {
 		super.handleShutdownSignal(consumerTag, sig);
-		System.out.printf("++++ %d handleShutdownSignal\n", id);
+		System.out.printf("++++ handleShutdownSignal for consumer %d\n", id);
 		executor.shutdown();
 		publisher.shutdown();
 	}

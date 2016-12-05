@@ -9,16 +9,19 @@ import java.util.concurrent.Executors;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.ShutdownListener;
 
 public class TestAmqpManager extends Thread {
 	
 	private String sourceQueueName;
 	private String destinationQueueName;
 	private ExecutorService executor;
+	private String host;
 	
-	TestAmqpManager(String _sourceQueueName, String _destinationQueueName) {
+	TestAmqpManager(String _sourceQueueName, String _destinationQueueName, String _host) {
 		sourceQueueName = _sourceQueueName;
 		destinationQueueName = _destinationQueueName;
+		host = _host;
 	}
 	
 
@@ -34,15 +37,16 @@ public class TestAmqpManager extends Thread {
 		}
 		try {
 			ConnectionFactory factory = new ConnectionFactory();
-			factory.setHost("127.0.0.1");
+			factory.setHost(host);
 			factory.setAutomaticRecoveryEnabled( false );
 			factory.setConnectionTimeout(500);
-			factory.setShutdownTimeout(500);
+			factory.setShutdownTimeout(200);
 			
-			final Connection connection1 = factory.newConnection();
-			final Publisher publisher = new Publisher(destinationQueueName, connection1);
-			
-			List<Channel> channels = buildSubscriberChannels(connection1, publisher);
+			final Connection connection = factory.newConnection();
+			final Publisher publisher = new Publisher(destinationQueueName, connection);
+			//ShutdownListener connectionShutdownListener = new ConnectionShutdownListener(publisher);
+			//connection.addShutdownListener(connectionShutdownListener);
+			List<Channel> channels = buildSubscriberChannels(connection, publisher);
 			publisher.startMonitor();
 			
 			
@@ -62,16 +66,14 @@ public class TestAmqpManager extends Thread {
 				@Override
 				public void run() {
 					System.out.println("****** Shutdown ******");
-					
-					
 					try {
-						if( connection1.isOpen())
-							connection1.close();
+						if( connection.isOpen())
+							connection.close();
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 					executor.shutdownNow();
-					publisher.shutdown();
+					//publisher.shutdown();
 				}
 			});
 		}

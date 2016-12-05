@@ -14,7 +14,7 @@ public class ManagerRunner {
 			destQ = argv[1];
 		}
 		System.out.printf("Starting for Source Q: '%s'  Destination Q: '%s'\n", srcQ, destQ);
-		TestAmqpManager sdk = new TestAmqpManager(srcQ, destQ);
+		TestAmqpManager sdk = new TestAmqpManager(srcQ, destQ, "localhost");
 		sdk.start();
 	}
 

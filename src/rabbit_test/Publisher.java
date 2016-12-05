@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.MessageProperties;
+import com.rabbitmq.client.ShutdownSignalException;
 
 public class Publisher {
 	private String destinationQueue;
@@ -50,11 +51,16 @@ public class Publisher {
 					e.printStackTrace();
 					return;
 				}
+				catch (ShutdownSignalException shutdownEx) {
+					System.out.println("++++ Publisher got shutdown signal");
+				}
 			}
 		}.start();
 	}
 	
+	
 	public void shutdown() {
+		System.out.println("++++ Publisher got shutdown request");
 		shutdown = true;
 	}
 	
