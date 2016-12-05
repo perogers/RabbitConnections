@@ -50,6 +50,9 @@ public class Publisher {
 				catch (ShutdownSignalException shutdownEx) {
 					System.out.println("++++ Publisher got shutdown signal");
 				}
+				catch (Exception ex) {
+					System.out.println("++++ Publisher failure: " + ex.getMessage());
+				}
 			}
 		}.start();
 	}
