@@ -61,6 +61,9 @@ public class Publisher {
 	
 	
 	public void shutdown() {
+		if ( destinationQueue == null ) {
+			return;
+		}
 		try {
 			channel.close();
 		}
