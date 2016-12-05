@@ -13,7 +13,7 @@ public class Publisher {
 	private Connection connection;
 	private Channel channel;
 	private final ConcurrentLinkedQueue<String> messageQueue;
-	private boolean shutdown = false;
+	private volatile boolean shutdown = false;
 	
 	public Publisher(String _destinationQueue, Connection _connection) {
 		destinationQueue = _destinationQueue;
@@ -31,17 +31,13 @@ public class Publisher {
 			public void run() {
 				System.out.println("Publisher started for " + destinationQueue);
 				try {
-					channel = connection.createChannel();
-					channel.queueDeclare(destinationQueue, false, false, false, null);
+					fetchChannel();
 					while (! shutdown ) {
 						String message = messageQueue.poll();
 						if( message != null) {
-							
 							if (channel == null) {
-								channel = connection.createChannel();
-								channel.queueDeclare(destinationQueue, false, false, false, null);
+								fetchChannel();
 							}
-							
 							channel.basicPublish("", destinationQueue, MessageProperties.TEXT_PLAIN, message.getBytes("UTF-8"));
 							//System.out.println(" [x] Sent '" + message + "'");
 						}
@@ -58,8 +54,19 @@ public class Publisher {
 		}.start();
 	}
 	
+	public void fetchChannel() throws IOException {
+		channel = connection.createChannel();
+		channel.queueDeclare(destinationQueue, false, false, false, null);
+	}
+	
 	
 	public void shutdown() {
+		try {
+			channel.close();
+		}
+		catch (Exception e) {
+			System.err.println("++++ Publisher - problem when closing channel:" + e.getMessage());
+		}
 		System.out.println("++++ Publisher got shutdown request");
 		shutdown = true;
 	}
